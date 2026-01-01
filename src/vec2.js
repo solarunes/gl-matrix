@@ -5,18 +5,15 @@ import * as glMatrix from "./common.js";
  * @module vec2
  */
 
+
+
 /**
  * Creates a new, empty vec2
  *
  * @returns {vec2} a new 2D vector
  */
 export function create() {
-  let out = new glMatrix.ARRAY_TYPE(2);
-  if (glMatrix.ARRAY_TYPE != Float32Array) {
-    out[0] = 0;
-    out[1] = 0;
-  }
-  return out;
+  return new glMatrix.ARRAY_ZERO_INIT_TYPE(2);
 }
 
 /**
@@ -233,9 +230,7 @@ export function scaleAndAdd(out, a, b, scale) {
  * @returns {Number} distance between a and b
  */
 export function distance(a, b) {
-  var x = b[0] - a[0],
-    y = b[1] - a[1];
-  return Math.sqrt(x * x + y * y);
+  return Math.hypot(b[0] - a[0], b[1] - a[1]);
 }
 
 /**
@@ -258,9 +253,7 @@ export function squaredDistance(a, b) {
  * @returns {Number} length of a
  */
 export function length(a) {
-  var x = a[0],
-    y = a[1];
-  return Math.sqrt(x * x + y * y);
+  return Math.hypot(a[0], a[1]);
 }
 
 /**
@@ -309,16 +302,11 @@ export function inverse(out, a) {
  * @returns {vec2} out
  */
 export function normalize(out, a) {
-  var x = a[0],
-    y = a[1];
-  var len = x * x + y * y;
-  if (len > 0) {
-    //TODO: evaluate use of glm_invsqrt here?
-    len = 1 / Math.sqrt(len);
-  }
-  out[0] = a[0] * len;
-  out[1] = a[1] * len;
-  return out;
+	const len = Math.max(Math.hypot(a[0], a[1]), glMatrix.EPSILON);
+
+	out[0] = a[0] / len;
+	out[1] = a[1] / len;
+	return out;
 }
 
 /**
@@ -372,8 +360,7 @@ export function lerp(out, a, b, t) {
  * @param {Number} [scale] Length of the resulting vector. If omitted, a unit vector will be returned
  * @returns {vec2} out
  */
-export function random(out, scale) {
-  scale = scale === undefined ? 1.0 : scale;
+export function random(out, scale = 1.0) {
   var r = glMatrix.RANDOM() * 2.0 * Math.PI;
   out[0] = Math.cos(r) * scale;
   out[1] = Math.sin(r) * scale;
@@ -483,7 +470,7 @@ export function angle(a, b) {
 
 /**
  * Get the signed angle in the interval [-pi,pi] between two 2D vectors (positive if `a` is to the right of `b`)
- * 
+ *
  * @param {ReadonlyVec2} a The first vector
  * @param {ReadonlyVec2} b The second vector
  * @returns {number} The signed angle in radians
@@ -536,15 +523,9 @@ export function exactEquals(a, b) {
  * @returns {Boolean} True if the vectors are equal, false otherwise.
  */
 export function equals(a, b) {
-  let a0 = a[0],
-    a1 = a[1];
-  let b0 = b[0],
-    b1 = b[1];
   return (
-    Math.abs(a0 - b0) <=
-      glMatrix.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) &&
-    Math.abs(a1 - b1) <=
-      glMatrix.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1))
+    glMatrix.equals(a[0], b[0]) &&
+    glMatrix.equals(a[1], b[1])
   );
 }
 
@@ -605,15 +586,9 @@ export const sqrLen = squaredLength;
 export const forEach = (function() {
   let vec = create();
 
-  return function(a, stride, offset, count, fn, arg) {
+  return function(a, stride, offset = 0, count, fn, arg) {
     let i, l;
-    if (!stride) {
-      stride = 2;
-    }
-
-    if (!offset) {
-      offset = 0;
-    }
+	stride = stride || 2;
 
     if (count) {
       l = Math.min(count * stride + offset, a.length);

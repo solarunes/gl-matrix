@@ -25,13 +25,7 @@ import * as glMatrix from "./common.js";
  * @returns {mat2d} a new 2x3 matrix
  */
 export function create() {
-  let out = new glMatrix.ARRAY_TYPE(6);
-  if (glMatrix.ARRAY_TYPE != Float32Array) {
-    out[1] = 0;
-    out[2] = 0;
-    out[4] = 0;
-    out[5] = 0;
-  }
+  let out = new glMatrix.ARRAY_ZERO_INIT_TYPE(6);
   out[0] = 1;
   out[3] = 1;
   return out;
@@ -213,17 +207,15 @@ export function rotate(out, a, rad) {
   let a0 = a[0],
     a1 = a[1],
     a2 = a[2],
-    a3 = a[3],
-    a4 = a[4],
-    a5 = a[5];
+    a3 = a[3];
   let s = Math.sin(rad);
   let c = Math.cos(rad);
   out[0] = a0 * c + a2 * s;
   out[1] = a1 * c + a3 * s;
   out[2] = a0 * -s + a2 * c;
   out[3] = a1 * -s + a3 * c;
-  out[4] = a4;
-  out[5] = a5;
+  out[4] = a[4];
+  out[5] = a[5];
   return out;
 }
 
@@ -477,31 +469,13 @@ export function exactEquals(a, b) {
  * @returns {Boolean} True if the matrices are equal, false otherwise.
  */
 export function equals(a, b) {
-  let a0 = a[0],
-    a1 = a[1],
-    a2 = a[2],
-    a3 = a[3],
-    a4 = a[4],
-    a5 = a[5];
-  let b0 = b[0],
-    b1 = b[1],
-    b2 = b[2],
-    b3 = b[3],
-    b4 = b[4],
-    b5 = b[5];
   return (
-    Math.abs(a0 - b0) <=
-      glMatrix.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) &&
-    Math.abs(a1 - b1) <=
-      glMatrix.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) &&
-    Math.abs(a2 - b2) <=
-      glMatrix.EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) &&
-    Math.abs(a3 - b3) <=
-      glMatrix.EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3)) &&
-    Math.abs(a4 - b4) <=
-      glMatrix.EPSILON * Math.max(1.0, Math.abs(a4), Math.abs(b4)) &&
-    Math.abs(a5 - b5) <=
-      glMatrix.EPSILON * Math.max(1.0, Math.abs(a5), Math.abs(b5))
+	glMatrix.equals(a[0], b[0]) &&
+	glMatrix.equals(a[1], b[1]) &&
+	glMatrix.equals(a[2], b[2]) &&
+	glMatrix.equals(a[3], b[3]) &&
+	glMatrix.equals(a[4], b[4]) &&
+	glMatrix.equals(a[5], b[5])
   );
 }
 

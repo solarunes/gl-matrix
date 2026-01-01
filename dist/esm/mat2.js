@@ -11,11 +11,7 @@ import * as glMatrix from "./common.js";
  * @returns {mat2} a new 2x2 matrix
  */
 export function create() {
-  var out = new glMatrix.ARRAY_TYPE(4);
-  if (glMatrix.ARRAY_TYPE != Float32Array) {
-    out[1] = 0;
-    out[2] = 0;
-  }
+  var out = new glMatrix.ARRAY_ZERO_INIT_TYPE(4);
   out[0] = 1;
   out[3] = 1;
   return out;
@@ -109,18 +105,11 @@ export function set(out, m00, m01, m10, m11) {
  * @returns {mat2} out
  */
 export function transpose(out, a) {
-  // If we are transposing ourselves we can skip a few steps but have to cache
-  // some values
-  if (out === a) {
-    var a1 = a[1];
-    out[1] = a[2];
-    out[2] = a1;
-  } else {
-    out[0] = a[0];
-    out[1] = a[2];
-    out[2] = a[1];
-    out[3] = a[3];
-  }
+  out[0] = a[0];
+  var o1 = a[1];
+  out[1] = a[2];
+  out[2] = o1;
+  out[3] = a[3];
   return out;
 }
 
@@ -232,16 +221,12 @@ export function rotate(out, a, rad) {
  * @returns {mat2} out
  **/
 export function scale(out, a, v) {
-  var a0 = a[0],
-    a1 = a[1],
-    a2 = a[2],
-    a3 = a[3];
   var v0 = v[0],
     v1 = v[1];
-  out[0] = a0 * v0;
-  out[1] = a1 * v0;
-  out[2] = a2 * v1;
-  out[3] = a3 * v1;
+  out[0] = a[0] * v0;
+  out[1] = a[1] * v0;
+  out[2] = a[2] * v1;
+  out[3] = a[3] * v1;
   return out;
 }
 
@@ -372,15 +357,7 @@ export function exactEquals(a, b) {
  * @returns {Boolean} True if the matrices are equal, false otherwise.
  */
 export function equals(a, b) {
-  var a0 = a[0],
-    a1 = a[1],
-    a2 = a[2],
-    a3 = a[3];
-  var b0 = b[0],
-    b1 = b[1],
-    b2 = b[2],
-    b3 = b[3];
-  return Math.abs(a0 - b0) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a2), Math.abs(b2)) && Math.abs(a3 - b3) <= glMatrix.EPSILON * Math.max(1.0, Math.abs(a3), Math.abs(b3));
+  return glMatrix.equals(a[0], b[0]) && glMatrix.equals(a[1], b[1]) && glMatrix.equals(a[2], b[2]) && glMatrix.equals(a[3], b[3]);
 }
 
 /**
