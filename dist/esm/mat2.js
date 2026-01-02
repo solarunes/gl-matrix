@@ -11,11 +11,7 @@ import * as glMatrix from "./common.js";
  * @returns {mat2} a new 2x2 matrix
  */
 export function create() {
-  var out = new glMatrix.ARRAY_TYPE(4);
-  if (glMatrix.ARRAY_TYPE != Float32Array) {
-    out[1] = 0;
-    out[2] = 0;
-  }
+  var out = new glMatrix.ARRAY_ZERO_INIT_TYPE(4);
   out[0] = 1;
   out[3] = 1;
   return out;
@@ -232,16 +228,12 @@ export function rotate(out, a, rad) {
  * @returns {mat2} out
  **/
 export function scale(out, a, v) {
-  var a0 = a[0],
-    a1 = a[1],
-    a2 = a[2],
-    a3 = a[3];
   var v0 = v[0],
     v1 = v[1];
-  out[0] = a0 * v0;
-  out[1] = a1 * v0;
-  out[2] = a2 * v1;
-  out[3] = a3 * v1;
+  out[0] = a[0] * v0;
+  out[1] = a[1] * v0;
+  out[2] = a[2] * v1;
+  out[3] = a[3] * v1;
   return out;
 }
 

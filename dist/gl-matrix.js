@@ -5,7 +5,7 @@
 @author Colin MacKenzie IV
 @version 3.4.4
 
-Copyright (c) 2015-2025, Brandon Jones, Colin MacKenzie IV.
+Copyright (c) 2015-2026, Brandon Jones, Colin MacKenzie IV.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,77 @@ THE SOFTWARE.
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.glMatrix = {}));
 })(this, (function (exports) { 'use strict';
 
+  function _assertThisInitialized(e) {
+    if (void 0 === e) throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    return e;
+  }
+  function _callSuper(t, o, e) {
+    return o = _getPrototypeOf(o), _possibleConstructorReturn(t, _isNativeReflectConstruct() ? Reflect.construct(o, e || [], _getPrototypeOf(t).constructor) : o.apply(t, e));
+  }
+  function _classCallCheck(a, n) {
+    if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
+  }
+  function _defineProperties(e, r) {
+    for (var t = 0; t < r.length; t++) {
+      var o = r[t];
+      o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o);
+    }
+  }
+  function _createClass(e, r, t) {
+    return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", {
+      writable: !1
+    }), e;
+  }
+  function _getPrototypeOf(t) {
+    return _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function (t) {
+      return t.__proto__ || Object.getPrototypeOf(t);
+    }, _getPrototypeOf(t);
+  }
+  function _inherits(t, e) {
+    if ("function" != typeof e && null !== e) throw new TypeError("Super expression must either be null or a function");
+    t.prototype = Object.create(e && e.prototype, {
+      constructor: {
+        value: t,
+        writable: !0,
+        configurable: !0
+      }
+    }), Object.defineProperty(t, "prototype", {
+      writable: !1
+    }), e && _setPrototypeOf(t, e);
+  }
+  function _isNativeReflectConstruct() {
+    try {
+      var t = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
+    } catch (t) {}
+    return (_isNativeReflectConstruct = function () {
+      return !!t;
+    })();
+  }
+  function _possibleConstructorReturn(t, e) {
+    if (e && ("object" == typeof e || "function" == typeof e)) return e;
+    if (void 0 !== e) throw new TypeError("Derived constructors may only return object or undefined");
+    return _assertThisInitialized(t);
+  }
+  function _setPrototypeOf(t, e) {
+    return _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function (t, e) {
+      return t.__proto__ = e, t;
+    }, _setPrototypeOf(t, e);
+  }
+  function _toPrimitive(t, r) {
+    if ("object" != typeof t || !t) return t;
+    var e = t[Symbol.toPrimitive];
+    if (void 0 !== e) {
+      var i = e.call(t, r || "default");
+      if ("object" != typeof i) return i;
+      throw new TypeError("@@toPrimitive must return a primitive value.");
+    }
+    return ("string" === r ? String : Number)(t);
+  }
+  function _toPropertyKey(t) {
+    var i = _toPrimitive(t, "string");
+    return "symbol" == typeof i ? i : i + "";
+  }
+
   /**
    * Common utilities
    * @module glMatrix
@@ -40,18 +111,18 @@ THE SOFTWARE.
   // Configuration Constants
   var EPSILON = 0.000001;
   var ARRAY_TYPE = typeof Float32Array !== "undefined" ? Float32Array : Array;
+  // If an array is required to initialize to zero.
+  var ARRAY_ZERO_INIT_TYPE = ARRAY_TYPE === Array ? _createFastZeroInit(ARRAY_TYPE) : ARRAY_TYPE;
   var RANDOM = Math.random;
   var ANGLE_ORDER = "zyx";
 
   /**
    * Symmetric round
-   * see https://www.npmjs.com/package/round-half-up-symmetric#user-content-detailed-background
    *
    * @param {Number} a value to round
    */
   function round$3(a) {
-    if (a >= 0) return Math.round(a);
-    return a % 0.5 === 0 ? Math.floor(a) : Math.round(a);
+    return Math.round(Math.abs(a)) * Math.sign(a);
   }
 
   /**
@@ -61,6 +132,13 @@ THE SOFTWARE.
    */
   function setMatrixArrayType(type) {
     ARRAY_TYPE = type;
+
+    // If the Array is not a TypedArray, create a constructor that automatically fills it with zeroes.
+    if (Array.isArray(type)) {
+      ARRAY_ZERO_INIT_TYPE = _createFastZeroInit(type);
+      return;
+    }
+    ARRAY_ZERO_INIT_TYPE = type;
   }
   var degree = Math.PI / 180;
   var radian = 180 / Math.PI;
@@ -98,10 +176,34 @@ THE SOFTWARE.
     return Math.abs(a - b) <= tolerance * Math.max(1, Math.abs(a), Math.abs(b));
   }
 
+  /**
+   * Creates a subclass of an Array-like class that initializes all it's elements to zero.
+   * @private
+   * @param {ArrayConstructor} type The Array-like class.
+   * @returns {ArrayConstructor} The zero-initializer subclass.
+   */
+  function _createFastZeroInit(type) {
+    return /*#__PURE__*/function (_type) {
+      function ArrayInitZero() {
+        var _this;
+        _classCallCheck(this, ArrayInitZero);
+        for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+          args[_key] = arguments[_key];
+        }
+        _this = _callSuper(this, ArrayInitZero, [].concat(args));
+        _this.fill(0);
+        return _this;
+      }
+      _inherits(ArrayInitZero, _type);
+      return _createClass(ArrayInitZero);
+    }(type);
+  }
+
   var common = /*#__PURE__*/Object.freeze({
     __proto__: null,
     EPSILON: EPSILON,
     get ARRAY_TYPE () { return ARRAY_TYPE; },
+    get ARRAY_ZERO_INIT_TYPE () { return ARRAY_ZERO_INIT_TYPE; },
     RANDOM: RANDOM,
     ANGLE_ORDER: ANGLE_ORDER,
     round: round$3,
@@ -122,11 +224,7 @@ THE SOFTWARE.
    * @returns {mat2} a new 2x2 matrix
    */
   function create$8() {
-    var out = new ARRAY_TYPE(4);
-    if (ARRAY_TYPE != Float32Array) {
-      out[1] = 0;
-      out[2] = 0;
-    }
+    var out = new ARRAY_ZERO_INIT_TYPE(4);
     out[0] = 1;
     out[3] = 1;
     return out;
@@ -343,16 +441,12 @@ THE SOFTWARE.
    * @returns {mat2} out
    **/
   function scale$8(out, a, v) {
-    var a0 = a[0],
-      a1 = a[1],
-      a2 = a[2],
-      a3 = a[3];
     var v0 = v[0],
       v1 = v[1];
-    out[0] = a0 * v0;
-    out[1] = a1 * v0;
-    out[2] = a2 * v1;
-    out[3] = a3 * v1;
+    out[0] = a[0] * v0;
+    out[1] = a[1] * v0;
+    out[2] = a[2] * v1;
+    out[3] = a[3] * v1;
     return out;
   }
 
@@ -594,13 +688,7 @@ THE SOFTWARE.
    * @returns {mat2d} a new 2x3 matrix
    */
   function create$7() {
-    var out = new ARRAY_TYPE(6);
-    if (ARRAY_TYPE != Float32Array) {
-      out[1] = 0;
-      out[2] = 0;
-      out[4] = 0;
-      out[5] = 0;
-    }
+    var out = new ARRAY_ZERO_INIT_TYPE(6);
     out[0] = 1;
     out[3] = 1;
     return out;
@@ -780,17 +868,15 @@ THE SOFTWARE.
     var a0 = a[0],
       a1 = a[1],
       a2 = a[2],
-      a3 = a[3],
-      a4 = a[4],
-      a5 = a[5];
+      a3 = a[3];
     var s = Math.sin(rad);
     var c = Math.cos(rad);
     out[0] = a0 * c + a2 * s;
     out[1] = a1 * c + a3 * s;
     out[2] = a0 * -s + a2 * c;
     out[3] = a1 * -s + a3 * c;
-    out[4] = a4;
-    out[5] = a5;
+    out[4] = a[4];
+    out[5] = a[5];
     return out;
   }
 
@@ -1090,15 +1176,7 @@ THE SOFTWARE.
    * @returns {mat3} a new 3x3 matrix
    */
   function create$6() {
-    var out = new ARRAY_TYPE(9);
-    if (ARRAY_TYPE != Float32Array) {
-      out[1] = 0;
-      out[2] = 0;
-      out[3] = 0;
-      out[5] = 0;
-      out[6] = 0;
-      out[7] = 0;
-    }
+    var out = new ARRAY_ZERO_INIT_TYPE(9);
     out[0] = 1;
     out[4] = 1;
     out[8] = 1;
@@ -1898,21 +1976,7 @@ THE SOFTWARE.
    * @returns {mat4} a new 4x4 matrix
    */
   function create$5() {
-    var out = new ARRAY_TYPE(16);
-    if (ARRAY_TYPE != Float32Array) {
-      out[1] = 0;
-      out[2] = 0;
-      out[3] = 0;
-      out[4] = 0;
-      out[6] = 0;
-      out[7] = 0;
-      out[8] = 0;
-      out[9] = 0;
-      out[11] = 0;
-      out[12] = 0;
-      out[13] = 0;
-      out[14] = 0;
-    }
+    var out = new ARRAY_ZERO_INIT_TYPE(16);
     out[0] = 1;
     out[5] = 1;
     out[10] = 1;
@@ -3914,13 +3978,7 @@ THE SOFTWARE.
    * @returns {vec3} a new 3D vector
    */
   function create$4() {
-    var out = new ARRAY_TYPE(3);
-    if (ARRAY_TYPE != Float32Array) {
-      out[0] = 0;
-      out[1] = 0;
-      out[2] = 0;
-    }
-    return out;
+    return new ARRAY_ZERO_INIT_TYPE(3);
   }
 
   /**
@@ -3944,10 +4002,7 @@ THE SOFTWARE.
    * @returns {Number} length of a
    */
   function length$4(a) {
-    var x = a[0];
-    var y = a[1];
-    var z = a[2];
-    return Math.sqrt(x * x + y * y + z * z);
+    return Math.hypot(a[0], a[1], a[2]);
   }
 
   /**
@@ -4167,10 +4222,7 @@ THE SOFTWARE.
    * @returns {Number} distance between a and b
    */
   function distance$2(a, b) {
-    var x = b[0] - a[0];
-    var y = b[1] - a[1];
-    var z = b[2] - a[2];
-    return Math.sqrt(x * x + y * y + z * z);
+    return Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
   }
 
   /**
@@ -4181,10 +4233,7 @@ THE SOFTWARE.
    * @returns {Number} squared distance between a and b
    */
   function squaredDistance$2(a, b) {
-    var x = b[0] - a[0];
-    var y = b[1] - a[1];
-    var z = b[2] - a[2];
-    return x * x + y * y + z * z;
+    return Math.pow(Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]), 2);
   }
 
   /**
@@ -4194,10 +4243,7 @@ THE SOFTWARE.
    * @returns {Number} squared length of a
    */
   function squaredLength$4(a) {
-    var x = a[0];
-    var y = a[1];
-    var z = a[2];
-    return x * x + y * y + z * z;
+    return Math.pow(a[0], 2) + Math.pow(a[1], 2) + Math.pow(a[2], 2);
   }
 
   /**
@@ -4236,17 +4282,10 @@ THE SOFTWARE.
    * @returns {vec3} out
    */
   function normalize$4(out, a) {
-    var x = a[0];
-    var y = a[1];
-    var z = a[2];
-    var len = x * x + y * y + z * z;
-    if (len > 0) {
-      //TODO: evaluate use of glm_invsqrt here?
-      len = 1 / Math.sqrt(len);
-    }
-    out[0] = a[0] * len;
-    out[1] = a[1] * len;
-    out[2] = a[2] * len;
+    var len = Math.max(Math.hypot(a[0], a[1], a[2]), EPSILON);
+    out[0] = a[0] / len;
+    out[1] = a[1] / len;
+    out[2] = a[2] / len;
     return out;
   }
 
@@ -4376,8 +4415,8 @@ THE SOFTWARE.
    * @param {Number} [scale] Length of the resulting vector. If omitted, a unit vector will be returned
    * @returns {vec3} out
    */
-  function random$3(out, scale) {
-    scale = scale === undefined ? 1.0 : scale;
+  function random$3(out) {
+    var scale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1.0;
     var r = RANDOM() * 2.0 * Math.PI;
     var z = RANDOM() * 2.0 - 1.0;
     var zScale = Math.sqrt(1.0 - z * z) * scale;
@@ -4673,14 +4712,13 @@ THE SOFTWARE.
    */
   var forEach$2 = function () {
     var vec = create$4();
-    return function (a, stride, offset, count, fn, arg) {
+    return function (a, stride) {
+      var offset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+      var count = arguments.length > 3 ? arguments[3] : undefined;
+      var fn = arguments.length > 4 ? arguments[4] : undefined;
+      var arg = arguments.length > 5 ? arguments[5] : undefined;
       var i, l;
-      if (!stride) {
-        stride = 3;
-      }
-      if (!offset) {
-        offset = 0;
-      }
+      stride = stride || 3;
       if (count) {
         l = Math.min(count * stride + offset, a.length);
       } else {
@@ -4763,14 +4801,7 @@ THE SOFTWARE.
    * @returns {vec4} a new 4D vector
    */
   function create$3() {
-    var out = new ARRAY_TYPE(4);
-    if (ARRAY_TYPE != Float32Array) {
-      out[0] = 0;
-      out[1] = 0;
-      out[2] = 0;
-      out[3] = 0;
-    }
-    return out;
+    return new ARRAY_ZERO_INIT_TYPE(4);
   }
 
   /**
@@ -5021,11 +5052,7 @@ THE SOFTWARE.
    * @returns {Number} distance between a and b
    */
   function distance$1(a, b) {
-    var x = b[0] - a[0];
-    var y = b[1] - a[1];
-    var z = b[2] - a[2];
-    var w = b[3] - a[3];
-    return Math.sqrt(x * x + y * y + z * z + w * w);
+    return Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2], b[3] - a[3]);
   }
 
   /**
@@ -5036,11 +5063,7 @@ THE SOFTWARE.
    * @returns {Number} squared distance between a and b
    */
   function squaredDistance$1(a, b) {
-    var x = b[0] - a[0];
-    var y = b[1] - a[1];
-    var z = b[2] - a[2];
-    var w = b[3] - a[3];
-    return x * x + y * y + z * z + w * w;
+    return Math.pow(Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2], b[3] - a[3]), 2);
   }
 
   /**
@@ -5050,11 +5073,7 @@ THE SOFTWARE.
    * @returns {Number} length of a
    */
   function length$3(a) {
-    var x = a[0];
-    var y = a[1];
-    var z = a[2];
-    var w = a[3];
-    return Math.sqrt(x * x + y * y + z * z + w * w);
+    return Math.hypot(a[0], a[1], a[2], a[3]);
   }
 
   /**
@@ -5064,11 +5083,7 @@ THE SOFTWARE.
    * @returns {Number} squared length of a
    */
   function squaredLength$3(a) {
-    var x = a[0];
-    var y = a[1];
-    var z = a[2];
-    var w = a[3];
-    return x * x + y * y + z * z + w * w;
+    return Math.pow(Math.hypot(a[0], a[1], a[2], a[3]), 2);
   }
 
   /**
@@ -5109,18 +5124,15 @@ THE SOFTWARE.
    * @returns {vec4} out
    */
   function normalize$3(out, a) {
-    var x = a[0];
-    var y = a[1];
-    var z = a[2];
-    var w = a[3];
-    var len = x * x + y * y + z * z + w * w;
-    if (len > 0) {
-      len = 1 / Math.sqrt(len);
-    }
-    out[0] = x * len;
-    out[1] = y * len;
-    out[2] = z * len;
-    out[3] = w * len;
+    var x = a[0],
+      y = a[1],
+      z = a[2],
+      w = a[3];
+    var len = Math.max(Math.hypot(x, y, z, w), EPSILON);
+    out[0] = x / len;
+    out[1] = y / len;
+    out[2] = z / len;
+    out[3] = w / len;
     return out;
   }
 
@@ -5383,14 +5395,13 @@ THE SOFTWARE.
    */
   var forEach$1 = function () {
     var vec = create$3();
-    return function (a, stride, offset, count, fn, arg) {
+    return function (a, stride) {
+      var offset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+      var count = arguments.length > 3 ? arguments[3] : undefined;
+      var fn = arguments.length > 4 ? arguments[4] : undefined;
+      var arg = arguments.length > 5 ? arguments[5] : undefined;
       var i, l;
-      if (!stride) {
-        stride = 4;
-      }
-      if (!offset) {
-        offset = 0;
-      }
+      stride = stride || 4;
       if (count) {
         l = Math.min(count * stride + offset, a.length);
       } else {
@@ -5467,12 +5478,7 @@ THE SOFTWARE.
    * @returns {quat} a new quaternion
    */
   function create$2() {
-    var out = new ARRAY_TYPE(4);
-    if (ARRAY_TYPE != Float32Array) {
-      out[0] = 0;
-      out[1] = 0;
-      out[2] = 0;
-    }
+    var out = new ARRAY_ZERO_INIT_TYPE(4);
     out[3] = 1;
     return out;
   }
@@ -6253,16 +6259,7 @@ THE SOFTWARE.
    * @returns {quat2} a new dual quaternion [real -> rotation, dual -> translation]
    */
   function create$1() {
-    var dq = new ARRAY_TYPE(8);
-    if (ARRAY_TYPE != Float32Array) {
-      dq[0] = 0;
-      dq[1] = 0;
-      dq[2] = 0;
-      dq[4] = 0;
-      dq[5] = 0;
-      dq[6] = 0;
-      dq[7] = 0;
-    }
+    var dq = new ARRAY_ZERO_INIT_TYPE(8);
     dq[3] = 1;
     return dq;
   }
@@ -7120,12 +7117,7 @@ THE SOFTWARE.
    * @returns {vec2} a new 2D vector
    */
   function create() {
-    var out = new ARRAY_TYPE(2);
-    if (ARRAY_TYPE != Float32Array) {
-      out[0] = 0;
-      out[1] = 0;
-    }
-    return out;
+    return new ARRAY_ZERO_INIT_TYPE(2);
   }
 
   /**
@@ -7342,9 +7334,7 @@ THE SOFTWARE.
    * @returns {Number} distance between a and b
    */
   function distance(a, b) {
-    var x = b[0] - a[0],
-      y = b[1] - a[1];
-    return Math.sqrt(x * x + y * y);
+    return Math.hypot(b[0] - a[0], b[1] - a[1]);
   }
 
   /**
@@ -7367,9 +7357,7 @@ THE SOFTWARE.
    * @returns {Number} length of a
    */
   function length(a) {
-    var x = a[0],
-      y = a[1];
-    return Math.sqrt(x * x + y * y);
+    return Math.hypot(a[0], a[1]);
   }
 
   /**
@@ -7418,15 +7406,9 @@ THE SOFTWARE.
    * @returns {vec2} out
    */
   function normalize(out, a) {
-    var x = a[0],
-      y = a[1];
-    var len = x * x + y * y;
-    if (len > 0) {
-      //TODO: evaluate use of glm_invsqrt here?
-      len = 1 / Math.sqrt(len);
-    }
-    out[0] = a[0] * len;
-    out[1] = a[1] * len;
+    var len = Math.max(Math.hypot(a[0], a[1]), EPSILON);
+    out[0] = a[0] / len;
+    out[1] = a[1] / len;
     return out;
   }
 
@@ -7481,8 +7463,8 @@ THE SOFTWARE.
    * @param {Number} [scale] Length of the resulting vector. If omitted, a unit vector will be returned
    * @returns {vec2} out
    */
-  function random(out, scale) {
-    scale = scale === undefined ? 1.0 : scale;
+  function random(out) {
+    var scale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1.0;
     var r = RANDOM() * 2.0 * Math.PI;
     out[0] = Math.cos(r) * scale;
     out[1] = Math.sin(r) * scale;
@@ -7593,7 +7575,7 @@ THE SOFTWARE.
 
   /**
    * Get the signed angle in the interval [-pi,pi] between two 2D vectors (positive if `a` is to the right of `b`)
-   * 
+   *
    * @param {ReadonlyVec2} a The first vector
    * @param {ReadonlyVec2} b The second vector
    * @returns {number} The signed angle in radians
@@ -7710,14 +7692,13 @@ THE SOFTWARE.
    */
   var forEach = function () {
     var vec = create();
-    return function (a, stride, offset, count, fn, arg) {
+    return function (a, stride) {
+      var offset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+      var count = arguments.length > 3 ? arguments[3] : undefined;
+      var fn = arguments.length > 4 ? arguments[4] : undefined;
+      var arg = arguments.length > 5 ? arguments[5] : undefined;
       var i, l;
-      if (!stride) {
-        stride = 2;
-      }
-      if (!offset) {
-        offset = 0;
-      }
+      stride = stride || 2;
       if (count) {
         l = Math.min(count * stride + offset, a.length);
       } else {
